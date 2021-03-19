@@ -11,6 +11,7 @@
     "strict": true,                             // Enable all strict type-checking options
     "skipLibCheck": true,                       // Skip type checking of declaration files, speed up compiling
     "forceConsistentCasingInFileNames": true,   // Ensure consistent file casing having the same behavior on multiple platforms
-    "sourceMap": true                           // Generates .map files mapping source TypeScript to compiled JavaScript for debugging
+    "sourceMap": true,                          // Generates .map files mapping source TypeScript to compiled JavaScript for debugging
+    "declaration": true                         // Generate .d.ts type definition files for the library
   }
 }
