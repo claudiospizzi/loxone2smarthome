@@ -1,0 +1,16 @@
+{
+  "name": "loxone2smarthome",
+  "version": "0.0.0",
+  "description": "TypeScript library to integrate various devices into a [Loxone] smart home.",
+  "keywords": [
+    "smarthome",
+    "loxone",
+    "mqtt",
+    "influxdb"
+  ],
+  "main": "dist/app.js",
+  "scripts": {
+  },
+  "author": "Claudio Spizzi",
+  "license": "MIT"
+}
