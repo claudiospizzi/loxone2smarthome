@@ -43,17 +43,19 @@ export type ErrorArgs = {
 /**
  * Arguments of a send event.
  */
-export type SendArgs = {
+export type SendArgs<T> = {
   source: SmartHomeDevice;
-  object: object;
+  sendTo: string;
+  message: T;
 };
 
 /**
  * Arguments of a receive event.
  */
-export type ReceiveArgs = {
+export type ReceiveArgs<T> = {
   source: SmartHomeDevice;
-  object: object;
+  receiveFrom: string;
+  message: T;
 };
 
 /**
@@ -144,9 +146,9 @@ export abstract class SmartHomeDevice extends EventEmitter {
    * @param to Target where the data was delivered.
    * @param object The sent object.
    */
-  protected emitSend(to: string, object: object) {
-    this.emit('send', { source: this, to: to, object: object } as SendArgs);
-    this.log.info(`Send to ${to} => ${object}`);
+  protected emitSend<T>(sendTo: string, message: T) {
+    this.emit('send', { source: this, sendTo: sendTo, message: message } as SendArgs<T>);
+    this.log.info(`Send to ${sendTo} => ${message}`);
   }
 
   /**
@@ -154,8 +156,8 @@ export abstract class SmartHomeDevice extends EventEmitter {
    * @param from Source of the received data.
    * @param object The received object.
    */
-  protected emitReceive(from: string, object: object) {
-    this.emit('receive', { source: this, from: from, object: object } as ReceiveArgs);
-    this.log.info(`Received from ${from} => ${object}`);
+  protected emitReceive<T>(receiveFrom: string, message: T) {
+    this.emit('receive', { source: this, receiveFrom: receiveFrom, message: message } as ReceiveArgs<T>);
+    this.log.info(`Received from ${receiveFrom} => ${message}`);
   }
 }

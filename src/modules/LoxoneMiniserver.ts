@@ -1,5 +1,5 @@
-import { SmartHomeDevice } from './SmartHomeDevice';
 import { createSocket as dgramCreateSocket, Socket } from 'dgram';
+import { SmartHomeDevice } from './SmartHomeDevice';
 import { SmartHomeThing } from './SmartHomeThing';
 
 /**
@@ -9,6 +9,15 @@ export type LoxoneMiniserverOption = {
   host: string;
   virtualInputPort: number;
   virtualOutputPort: number;
+};
+
+/**
+ * Message interface to the Loxone Miniserver.
+ */
+export type LoxoneMiniserverMessage = {
+  thing: string;
+  property: string;
+  value: string;
 };
 
 /**
@@ -56,10 +65,10 @@ export class LoxoneMiniserver extends SmartHomeDevice {
           const loxoneRegex = /^(thing|name|device|dev|d)=(?<thing>.*) (property|key|k)=(?<property>.*) (value|val|v)=(?<value>.*)$/g;
           const messageMatch = msg.toString().match(loxoneRegex);
           if (messageMatch !== undefined) {
-            this.emitReceive(rinfo.address, {
-              thing: messageMatch?.groups?.thing,
-              property: messageMatch?.groups?.property,
-              value: messageMatch?.groups?.value
+            this.emitReceive<LoxoneMiniserverMessage>(rinfo.address, {
+              thing: `${messageMatch?.groups?.thing}`,
+              property: `${messageMatch?.groups?.property}`,
+              value: `${messageMatch?.groups?.value}`
             });
           }
         });
@@ -87,7 +96,7 @@ export class LoxoneMiniserver extends SmartHomeDevice {
       const data = Buffer.from(message);
       this.server.send(data, this.virtualInputPort, this.address, (error) => {
         if (error === null) {
-          this.emitSend(`${this.address}:${this.virtualInputPort}`, {
+          this.emitSend<LoxoneMiniserverMessage>(`${this.address}:${this.virtualInputPort}`, {
             thing: thing.name,
             property: property,
             value: value
