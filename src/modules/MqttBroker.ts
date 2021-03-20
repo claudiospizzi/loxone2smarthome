@@ -91,7 +91,7 @@ export class MqttBroker extends SmartHomeDevice {
           retain: retain,
           qos: 2 as QoS
         }
-      }
+      };
       const stringValue = JSON.stringify({
         ts: Date.now(),
         val: value,

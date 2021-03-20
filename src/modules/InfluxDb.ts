@@ -92,7 +92,7 @@ export class InfluxDb extends SmartHomeDevice {
             }
           }
         ]
-      }
+      };
       this.client?.writeMeasurement(data.measurement, data.points);
       this.emitSend(`${this.address}:${this.port}`, data);
     } else {

@@ -140,7 +140,7 @@ export abstract class SmartHomeDevice extends EventEmitter {
     this.emit('warning', { source: this, message: `${error}`, error: error } as ErrorArgs);
     this.log.error(error);
   }
-  
+
   /**
    * Emit a send event.
    * @param to Target where the data was delivered.
