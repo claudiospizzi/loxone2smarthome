@@ -160,7 +160,7 @@ export abstract class SmartHomeDevice extends EventEmitter {
    * @param to Target where the data was delivered.
    * @param object The sent object.
    */
-  protected emitSend<T extends SmartHomeDevice, U>(sendTo: string, message: U) {
+  protected emitSend<T extends SmartHomeDevice, U>(sendTo: string, message: U | U[]) {
     this.emit('send', {
       source: this as SmartHomeDevice,
       sendTo: sendTo,
@@ -175,7 +175,7 @@ export abstract class SmartHomeDevice extends EventEmitter {
    * @param from Source of the received data.
    * @param object The received object.
    */
-  protected emitReceive<T extends SmartHomeDevice, U>(receiveFrom: string, message: U) {
+  protected emitReceive<T extends SmartHomeDevice, U>(receiveFrom: string, message: U | U[]) {
     this.emit('receive', {
       source: this as SmartHomeDevice,
       receiveFrom: receiveFrom,
