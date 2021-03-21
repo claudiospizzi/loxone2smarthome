@@ -1,6 +1,21 @@
 import { SmartHomeDevice } from './SmartHomeDevice';
 
 /**
+ * The value type a updated property can have.
+ */
+export type UpdateValue = string | number | boolean | undefined;
+
+/**
+ * Arguments of a property update event.
+ */
+export interface UpdateArgs<T extends SmartHomeThing> {
+  source: T;
+  type: 'get' | 'set';
+  property: string;
+  value: UpdateValue;
+}
+
+/**
  * Base class to interact with a Loxone controlled smart home thing.
  */
 export abstract class SmartHomeThing extends SmartHomeDevice {
@@ -33,5 +48,22 @@ export abstract class SmartHomeThing extends SmartHomeDevice {
     this.name = name;
     this.location = location;
     this.description = description;
+  }
+
+  /**
+   * Emit an update event.
+   * @param source The source smart home thing.
+   * @param action Action if the update was triggered by a set or by a get.
+   * @param property The updated property.
+   * @param value The new value.
+   */
+  protected emitUpdate<T extends SmartHomeThing>(type: 'get' | 'set', property: string, value: UpdateValue) {
+    this.emit('update', {
+      source: this as SmartHomeThing,
+      type: type,
+      property: property,
+      value: value
+    } as UpdateArgs<T>);
+    this.log.info(`Update by ${type === 'get' ? 'Device' : 'Loxone'}: ${property} => ${value}`);
   }
 }

@@ -30,12 +30,12 @@ export class LoxoneMiniserver extends SmartHomeDevice {
   /**
    * Port for the Loxone virtual input.
    */
-  public virtualInputPort: number;
+  public viPort: number;
 
   /**
    * Port for the Loxone virtual output.
    */
-  public virtualOutputPort: number;
+  public voPort: number;
 
   /**
    * Create a new Loxone Miniserver.
@@ -44,8 +44,8 @@ export class LoxoneMiniserver extends SmartHomeDevice {
   constructor(option: LoxoneMiniserverOption) {
     super('LoxoneMiniserver', option.host);
 
-    this.virtualInputPort = option.virtualInputPort;
-    this.virtualOutputPort = option.virtualOutputPort;
+    this.viPort = option.virtualInputPort;
+    this.voPort = option.virtualOutputPort;
   }
 
   /**
@@ -56,16 +56,16 @@ export class LoxoneMiniserver extends SmartHomeDevice {
       try {
         this.server = dgramCreateSocket('udp4');
         this.server.on('listening', () => {
-          this.emitConnect(`${this.address}:${this.virtualInputPort}`, `udp://0.0.0.0:${this.virtualOutputPort}`);
+          this.emitConnect<LoxoneMiniserver>(`${this.address}:${this.viPort}`, `udp://0.0.0.0:${this.voPort}`);
         });
         this.server.on('close', () => {
-          this.emitDisconnect(`${this.address}:${this.virtualInputPort}`, `udp://0.0.0.0:${this.virtualOutputPort}`);
+          this.emitDisconnect<LoxoneMiniserver>(`${this.address}:${this.viPort}`, `udp://0.0.0.0:${this.voPort}`);
         });
         this.server.on('message', (msg, rinfo) => {
           const loxoneRegex = /^(thing|name|device|dev|d)=(?<thing>.*) (property|key|k)=(?<property>.*) (value|val|v)=(?<value>.*)$/g;
           const messageMatch = msg.toString().match(loxoneRegex);
           if (messageMatch !== undefined) {
-            this.emitReceive<LoxoneMiniserverMessage>(rinfo.address, {
+            this.emitReceive<LoxoneMiniserver, LoxoneMiniserverMessage>(rinfo.address, {
               thing: `${messageMatch?.groups?.thing}`,
               property: `${messageMatch?.groups?.property}`,
               value: `${messageMatch?.groups?.value}`
@@ -73,13 +73,13 @@ export class LoxoneMiniserver extends SmartHomeDevice {
           }
         });
         this.server.on('error', (error) => {
-          this.emitError(error);
+          this.emitError<LoxoneMiniserver>(error);
           // this.server.close();
         });
-        this.server.bind(this.virtualOutputPort);
+        this.server.bind(this.voPort);
         this.initialized = true;
       } catch (error) {
-        this.emitError(error);
+        this.emitError<LoxoneMiniserver>(error);
       }
     }
   }
@@ -94,19 +94,19 @@ export class LoxoneMiniserver extends SmartHomeDevice {
     if (this.initialized && this.server !== undefined) {
       const message = `thing=${thing.name} property=${property} value=${value}`;
       const data = Buffer.from(message);
-      this.server.send(data, this.virtualInputPort, this.address, (error) => {
+      this.server.send(data, this.viPort, this.address, (error) => {
         if (error === null) {
-          this.emitSend<LoxoneMiniserverMessage>(`${this.address}:${this.virtualInputPort}`, {
+          this.emitSend<LoxoneMiniserver, LoxoneMiniserverMessage>(`${this.address}:${this.viPort}`, {
             thing: thing.name,
             property: property,
             value: value
           });
         } else {
-          this.emitError(error);
+          this.emitError<LoxoneMiniserver>(error);
         }
       });
     } else {
-      this.emitWarning('Loxone Miniserver not initialized, unable to send message.');
+      this.emitWarning<LoxoneMiniserver>('Loxone Miniserver not initialized, unable to send message.');
     }
   }
 }

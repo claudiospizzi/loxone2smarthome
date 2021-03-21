@@ -12,6 +12,18 @@ export type MqttBrokerOption = {
 };
 
 /**
+ * Message interface to the MQTT Broker.
+ */
+export type MqttBrokerMessage = {
+  topic: string;
+  message: string;
+  opts: {
+    retain: boolean;
+    qos: QoS;
+  };
+};
+
+/**
  * Class representing a MQTT Broker.
  */
 export class MqttBroker extends SmartHomeDevice {
@@ -55,17 +67,17 @@ export class MqttBroker extends SmartHomeDevice {
         });
         this.client.on('connect', () => {
           this.client?.publish(`${this.topic}/connected`, '2', { retain: true, qos: 2 });
-          this.emitConnect(this.url);
+          this.emitConnect<MqttBroker>(this.url);
         });
         this.client.on('close', () => {
-          this.emitDisconnect(this.url);
+          this.emitDisconnect<MqttBroker>(this.url);
         });
         this.client.on('error', (error) => {
-          this.emitError(error);
+          this.emitError<MqttBroker>(error);
         });
         this.initialized = true;
       } catch (error) {
-        this.emitError(error);
+        this.emitError<MqttBroker>(error);
       }
     }
   }
@@ -92,16 +104,10 @@ export class MqttBroker extends SmartHomeDevice {
           qos: 2 as QoS
         }
       };
-      const stringValue = JSON.stringify({
-        ts: Date.now(),
-        val: value,
-        loc: thing.location,
-        desc: thing.description
-      });
       this.client.publish(data.topic, data.message, data.opts);
-      this.emitSend(this.url, data);
+      this.emitSend<MqttBroker, MqttBrokerMessage>(this.url, data);
     } else {
-      this.emitWarning('MQTT Broker not initialized, unable to publish message.');
+      this.emitWarning<MqttBroker>('MQTT Broker not initialized, unable to publish message.');
     }
   }
 }

@@ -4,59 +4,59 @@ import { Logger } from 'tslog';
 /**
  * Arguments of a connect event.
  */
-export type ConnectArgs = {
-  source: SmartHomeDevice;
-};
+export interface ConnectArgs<T extends SmartHomeDevice> {
+  source: T;
+}
 
 /**
- * Arguments of a connect event.
+ * Arguments of a disconnect event.
  */
-export type DisconnectArgs = {
-  source: SmartHomeDevice;
-};
+export interface DisconnectArgs<T extends SmartHomeDevice> {
+  source: T;
+}
 
 /**
  * Arguments of an informational event.
  */
-export type InfoArgs = {
-  source: SmartHomeDevice;
+export interface InfoArgs<T extends SmartHomeDevice> {
+  source: T;
   message: string;
-};
+}
 
 /**
  * Arguments of a warning event.
  */
-export type WarningArgs = {
-  source: SmartHomeDevice;
+export interface WarningArgs<T extends SmartHomeDevice> {
+  source: T;
   message: string;
-};
+}
 
 /**
  * Arguments of an error event.
  */
-export type ErrorArgs = {
-  source: SmartHomeDevice;
+export interface ErrorArgs<T extends SmartHomeDevice> {
+  source: T;
   message: string;
   error: Error;
-};
+}
 
 /**
  * Arguments of a send event.
  */
-export type SendArgs<T> = {
-  source: SmartHomeDevice;
+export interface SendArgs<T extends SmartHomeDevice, U> {
+  source: T;
   sendTo: string;
-  message: T;
-};
+  message: U;
+}
 
 /**
  * Arguments of a receive event.
  */
-export type ReceiveArgs<T> = {
-  source: SmartHomeDevice;
+export interface ReceiveArgs<T extends SmartHomeDevice, U> {
+  source: T;
   receiveFrom: string;
-  message: T;
-};
+  message: U;
+}
 
 /**
  * Base class to interact with smart home systems and devices.
@@ -84,12 +84,12 @@ export abstract class SmartHomeDevice extends EventEmitter {
 
   /**
    * Emit a connect event.
+   * @param source The source smart home device or thing.
    */
-  protected emitConnect(connectTo?: string, bindOn?: string) {
-    const args: ConnectArgs = {
-      source: this
-    };
-    this.emit('connect', args);
+  protected emitConnect<T extends SmartHomeDevice>(connectTo?: string, bindOn?: string) {
+    this.emit('connect', {
+      source: this as SmartHomeDevice
+    } as ConnectArgs<T>);
     if (connectTo !== undefined) {
       this.log.debug(`Connect to ${connectTo}`);
     }
@@ -100,12 +100,12 @@ export abstract class SmartHomeDevice extends EventEmitter {
 
   /**
    * Emit a disconnect event.
+   * @param source The source smart home device or thing.
    */
-  protected emitDisconnect(disconnectFrom?: string, unbindFrom?: string) {
-    const args: DisconnectArgs = {
-      source: this
-    };
-    this.emit('disconnect', args);
+  protected emitDisconnect<T extends SmartHomeDevice>(disconnectFrom?: string, unbindFrom?: string) {
+    this.emit('disconnect', {
+      source: this as SmartHomeDevice
+    } as DisconnectArgs<T>);
     if (disconnectFrom !== undefined) {
       this.log.debug(`Disconnect from ${disconnectFrom}`);
     }
@@ -116,48 +116,71 @@ export abstract class SmartHomeDevice extends EventEmitter {
 
   /**
    * Emit an informational event.
+   * @param source The source smart home device or thing.
    * @param message The info message.
    */
-  protected emitInfo(message: string) {
-    this.emit('info', { source: this, message: message } as InfoArgs);
+  protected emitInfo<T extends SmartHomeDevice>(message: string) {
+    this.emit('info', {
+      source: this as SmartHomeDevice,
+      message: message
+    } as InfoArgs<T>);
     this.log.info(message);
   }
 
   /**
    * Emit a warning event.
+   * @param source The source smart home device or thing.
    * @param message The warning message.
    */
-  protected emitWarning(message: string) {
-    this.emit('warning', { source: this, message: message } as WarningArgs);
+  protected emitWarning<T extends SmartHomeDevice>(message: string) {
+    this.emit('warning', {
+      source: this as SmartHomeDevice,
+      message: message
+    } as WarningArgs<T>);
     this.log.warn(message);
   }
 
   /**
    * Emit an error event.
+   * @param source The source smart home device or thing.
    * @param error The error object.
    */
-  protected emitError(error: Error) {
-    this.emit('warning', { source: this, message: `${error}`, error: error } as ErrorArgs);
+  protected emitError<T extends SmartHomeDevice>(error: Error) {
+    this.emit('warning', {
+      source: this as SmartHomeDevice,
+      message: `${error}`,
+      error: error
+    } as ErrorArgs<T>);
     this.log.error(error);
   }
 
   /**
    * Emit a send event.
+   * @param source The source smart home device or thing.
    * @param to Target where the data was delivered.
    * @param object The sent object.
    */
-  protected emitSend<T>(sendTo: string, message: T) {
-    this.emit('send', { source: this, sendTo: sendTo, message: message } as SendArgs<T>);
+  protected emitSend<T extends SmartHomeDevice, U>(sendTo: string, message: U) {
+    this.emit('send', {
+      source: this as SmartHomeDevice,
+      sendTo: sendTo,
+      message: message
+    } as SendArgs<T, U>);
     this.log.info(`Send to ${sendTo} => ${message}`);
   }
 
   /**
    * Emit a receive event.
+   * @param source The source smart home device or thing.
    * @param from Source of the received data.
    * @param object The received object.
    */
-  protected emitReceive<T>(receiveFrom: string, message: T) {
-    this.emit('receive', { source: this, receiveFrom: receiveFrom, message: message } as ReceiveArgs<T>);
+  protected emitReceive<T extends SmartHomeDevice, U>(receiveFrom: string, message: U) {
+    this.emit('receive', {
+      source: this as SmartHomeDevice,
+      receiveFrom: receiveFrom,
+      message: message
+    } as ReceiveArgs<T, U>);
     this.log.info(`Received from ${receiveFrom} => ${message}`);
   }
 }

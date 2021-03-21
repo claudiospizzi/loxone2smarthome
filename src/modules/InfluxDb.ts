@@ -1,4 +1,4 @@
-import { InfluxDB } from 'influx';
+import { InfluxDB, IPoint } from 'influx';
 import { SmartHomeDevice } from './SmartHomeDevice';
 import { SmartHomeThing } from './SmartHomeThing';
 
@@ -9,6 +9,14 @@ export type InfluxDbOption = {
   host: string;
   port: number;
   database: string;
+};
+
+/**
+ * Message interface to the InfluxDB.
+ */
+export type InfluxDbMessage = {
+  measurement: string;
+  points: IPoint[];
 };
 
 /**
@@ -54,17 +62,17 @@ export class InfluxDb extends SmartHomeDevice {
           .ping(5000)
           .then((hosts) => {
             if (hosts.length >= 1 && hosts[0].online) {
-              this.emitConnect(`http://${this.address}:${this.port}/${this.database}`);
+              this.emitConnect<InfluxDb>(`http://${this.address}:${this.port}/${this.database}`);
             } else {
-              this.emitDisconnect(`http://${this.address}:${this.port}/${this.database}`);
+              this.emitDisconnect<InfluxDb>(`http://${this.address}:${this.port}/${this.database}`);
             }
           })
           .catch((error) => {
-            this.emitError(error);
+            this.emitError<InfluxDb>(error);
           });
         this.initialized = true;
       } catch (error) {
-        this.emitError(error);
+        this.emitError<InfluxDb>(error);
       }
     }
   }
@@ -78,7 +86,7 @@ export class InfluxDb extends SmartHomeDevice {
    */
   send(thing: SmartHomeThing, measurement: string, field: string, value: string) {
     if (this.initialized && this.client !== undefined) {
-      const data = {
+      const data: InfluxDbMessage = {
         measurement: measurement,
         points: [
           {
@@ -94,9 +102,9 @@ export class InfluxDb extends SmartHomeDevice {
         ]
       };
       this.client?.writeMeasurement(data.measurement, data.points);
-      this.emitSend(`${this.address}:${this.port}`, data);
+      this.emitSend<InfluxDb, InfluxDbMessage>(`${this.address}:${this.port}`, data);
     } else {
-      this.emitWarning('InfluxDB not initialized, unable to write measurement.');
+      this.emitWarning<InfluxDb>('InfluxDB not initialized, unable to write measurement.');
     }
   }
 }
